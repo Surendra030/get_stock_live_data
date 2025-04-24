@@ -65,7 +65,7 @@ def calculate_and_save(open_price, yesterday_high, yesterday_low):
 # Get list of stock symbols in batches
 def get_stock_symbols():
 
-    batch_size = max(1, len(stock_symbols) // 100)
+    batch_size = max(1, len(stock_symbols) // 50)
     main_lst = [stock_symbols[i:i + batch_size] for i in range(0, len(stock_symbols), batch_size)]
     return main_lst
 
@@ -136,16 +136,18 @@ def home():
 # Route to get all available stock codes and count
 @app.route("/get_all_stock_codes", methods=["GET"])
 def get_all_stock_codes():
+    global stock_codes, stock_symbols  # 🔧 Add this line
+
     try:
-        if not stock_codes:   
+        if not stock_codes:
             nse = Nse()
             stock_codes = nse.get_stock_codes()
             stock_symbols = [symbol for symbol in stock_codes if symbol != "SYMBOL"]
 
         return jsonify({
-                "total_stock_codes": len(stock_symbols),
-                "stock_codes": stock_symbols
-            })
+            "total_stock_codes": len(stock_symbols),
+            "stock_codes": stock_symbols
+        })
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
