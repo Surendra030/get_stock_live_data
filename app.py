@@ -148,7 +148,7 @@ def get_all_stock_codes():
         return jsonify({
             "total_stock_codes": len(stock_symbols),
             "stock_codes": stock_symbols,
-            "batch_count": math.ceil(len(stock_symbols)/BATCH_COUNT_NUM)
+            "batch_count": math.ceil(len(stock_symbols) / BATCH_COUNT_NUM)
         })
 
     except Exception as e:
