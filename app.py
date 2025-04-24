@@ -10,7 +10,7 @@ app = Flask(__name__)
 # Constants
 MAX_RETRIES = 3
 RETRY_DELAY = 5
-MAX_WORKERS = 18
+MAX_WORKERS = 30
 CAPITAL = 100000  # For calculation
 
 
