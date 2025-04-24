@@ -2,8 +2,8 @@ from flask import Flask, jsonify, request
 from nseconnect import Nse
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
-import pytz,math
-import time
+import pytz
+import time,math
 
 app = Flask(__name__)
 
@@ -144,11 +144,13 @@ def get_all_stock_codes():
             nse = Nse()
             stock_codes = nse.get_stock_codes()
             stock_symbols = [symbol for symbol in stock_codes if symbol != "SYMBOL"]
-        batch_size = math.ceil(len(stock_symbols) / BATCH_COUNT_NUM)
+            
+        batch_size = math.ceil(len(stock_symbols) // BATCH_COUNT_NUM)
+        
         return jsonify({
             "total_stock_codes": len(stock_symbols),
             "stock_codes": stock_symbols,
-            "batch_count": math.ceil(BATCH_COUNT_NUM/batch_size)
+            "batch_count":math.ceil(BATCH_COUNT_NUM/batch_size)
         })
 
     except Exception as e:
