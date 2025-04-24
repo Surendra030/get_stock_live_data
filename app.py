@@ -14,6 +14,11 @@ MAX_WORKERS = 18
 CAPITAL = 100000  # For calculation
 
 
+nse = Nse()
+stock_codes = nse.get_stock_codes()
+stock_symbols = [symbol for symbol in stock_codes if symbol != "SYMBOL"]
+
+
 # Round to nearest base value
 def mround(value, base):
     return round(base * round(float(value) / base), 2)
@@ -59,18 +64,15 @@ def calculate_and_save(open_price, yesterday_high, yesterday_low):
 
 # Get list of stock symbols in batches
 def get_stock_symbols():
-    nse = Nse()
-    stock_codes = nse.get_stock_codes()
-    stock_symbols = [symbol for symbol in stock_codes if symbol != "SYMBOL"]
 
-    batch_size = max(1, len(stock_symbols) // 30)
+    batch_size = max(1, len(stock_symbols) // 100)
     main_lst = [stock_symbols[i:i + batch_size] for i in range(0, len(stock_symbols), batch_size)]
     return main_lst
 
 
 # Fetch NSE data for a symbol
 def fetch_stock_data(symbol):
-    nse = Nse()
+    
     for attempt in range(1, MAX_RETRIES + 1):
         try:
             quote = nse.get_quote(symbol)
@@ -135,10 +137,10 @@ def home():
 @app.route("/get_all_stock_codes", methods=["GET"])
 def get_all_stock_codes():
     try:
-            
-        nse = Nse()
-        stock_codes = nse.get_stock_codes()
-        stock_symbols = [symbol for symbol in stock_codes if symbol != "SYMBOL"]
+        if not stock_codes:   
+            nse = Nse()
+            stock_codes = nse.get_stock_codes()
+            stock_symbols = [symbol for symbol in stock_codes if symbol != "SYMBOL"]
 
         return jsonify({
                 "total_stock_codes": len(stock_symbols),
