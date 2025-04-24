@@ -63,7 +63,7 @@ def get_stock_symbols():
     stock_codes = nse.get_stock_codes()
     stock_symbols = [symbol for symbol in stock_codes if symbol != "SYMBOL"]
 
-    batch_size = max(1, len(stock_symbols) // 10)
+    batch_size = max(1, len(stock_symbols) // 30)
     main_lst = [stock_symbols[i:i + batch_size] for i in range(0, len(stock_symbols), batch_size)]
     return main_lst
 
