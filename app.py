@@ -11,6 +11,7 @@ app = Flask(__name__)
 MAX_RETRIES = 3
 RETRY_DELAY = 5
 MAX_WORKERS = 50
+BATCH_COUNT_NUM = 50
 CAPITAL = 100000  # For calculation
 
 
@@ -65,7 +66,7 @@ def calculate_and_save(open_price, yesterday_high, yesterday_low):
 # Get list of stock symbols in batches
 def get_stock_symbols():
 
-    batch_size = max(1, len(stock_symbols) // 10)
+    batch_size = max(1, len(stock_symbols) // BATCH_COUNT_NUM)
     main_lst = [stock_symbols[i:i + batch_size] for i in range(0, len(stock_symbols), batch_size)]
     return main_lst
 
