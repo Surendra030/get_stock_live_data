@@ -11,7 +11,7 @@ app = Flask(__name__)
 MAX_RETRIES = 3
 RETRY_DELAY = 5
 MAX_WORKERS = 50
-BATCH_COUNT_NUM = 50
+BATCH_COUNT_NUM = 100
 CAPITAL = 100000  # For calculation
 
 
