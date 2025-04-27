@@ -73,9 +73,9 @@ def get_stock_symbols():
     return main_lst
 
 def difference_preserve_order(lst1, lst2):
-    set2 = set(lst2)
-    return list(item for item in lst1 if item not in set2)
-
+    # set2 = set(lst2)
+    # return list(item for item in lst1 if item not in set2)
+    return list( set(lst1) - set(lst2))
 
 # Fetch NSE data for a symbol
 def fetch_stock_data(symbol):
@@ -182,7 +182,8 @@ def get_stocks_data():
             "stocks": all_stock_data,
             "selected_stock":selected_symbols,
             "not_fetched_lst":not_fetched_lst,
-            "fetched_stock":fetched_lst
+            "fetched_stock":fetched_lst,
+            "fetching_count":fetching_count
         })
 
     except Exception as e:
