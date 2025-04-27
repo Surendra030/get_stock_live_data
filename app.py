@@ -10,7 +10,7 @@ app = Flask(__name__)
 # Constants
 MAX_RETRIES = 3
 RETRY_DELAY = 5
-MAX_WORKERS = 15
+MAX_WORKERS = 30
 BATCH_COUNT_NUM = 100
 CAPITAL = 100000  # For calculation
 
@@ -79,6 +79,8 @@ def difference_preserve_order(lst1, lst2):
 
 # Fetch NSE data for a symbol
 def fetch_stock_data(symbol):
+    
+    global fetched_lst
     
     for attempt in range(1, MAX_RETRIES + 1):
         try:
@@ -161,7 +163,9 @@ def get_stocks_data():
         return jsonify({
             "timestamp": datetime.now(pytz.timezone('Asia/Kolkata')).strftime("%d-%m-%Y %H:%M"),
             "stocks": all_stock_data,
-            "not_fetched_lst":not_fetched_lst
+            "selected_stock":selected_symbols,
+            "not_fetched_lst":not_fetched_lst,
+            "fetched_stock":fetched_lst
         })
 
     except Exception as e:
