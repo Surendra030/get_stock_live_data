@@ -14,7 +14,7 @@ MAX_WORKERS = 15
 BATCH_COUNT_NUM = 100
 CAPITAL = 100000  # For calculation
 
-fetched_lst = []
+fetched_count = []
 
 
 nse = Nse()
@@ -72,14 +72,12 @@ def get_stock_symbols():
     main_lst = [stock_symbols[i:i + batch_size] for i in range(0, len(stock_symbols), batch_size)]
     return main_lst
 
-def difference_preserve_order(lst1, lst2):
-
-    return list( set(lst1) - set(lst2))
 
 # Fetch NSE data for a symbol
 def fetch_stock_data(symbol):
-    global fetched_lst
+    
     for attempt in range(1, MAX_RETRIES + 1):
+        global fetched_count
         try:
             quote = nse.get_quote(symbol)
             if not quote:
@@ -88,8 +86,7 @@ def fetch_stock_data(symbol):
                 'STOCK_SYMBOL':symbol,
                 'STOCK_DATA':quote
             }
-            fetched_lst.append(symbol)
-            
+            fetched_count.append(symbol_index)
             return obj
         
         
@@ -169,11 +166,6 @@ def get_all_stock_codes():
 @app.route("/get_stocks_data", methods=["GET"])
 def get_stocks_data():
     try:
-        global fetched_lst
-        fetched_lst.clear()
-        
-        repeating_code = 0
-        
         batch_param = request.args.get("batch_num", default=None, type=int)
         if batch_param is None:
             return jsonify({"error": "Please provide a valid 'batch_num' in query params"}), 400
@@ -186,29 +178,16 @@ def get_stocks_data():
 
         all_stock_data = []
         with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-            futures = {executor.submit(fetch_stock_data, symbol): symbol for symbol in selected_symbols}
+            futures = {executor.submit(fetch_stock_data, symbol,index): symbol for index,symbol in enumerate(selected_symbols)}
             for future in as_completed(futures):
                 result = future.result()
                 if result:
                     all_stock_data.append(result)
-        
-        if len(all_stock_data)>0 and repeating_code==0:
-            not_fetched_list = difference_preserve_order(selected_symbols,fetched_lst)
-            if len(not_fetched_list)>0:
-                repeating_code +=1
-                with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-                    futures = {executor.submit(fetch_stock_data, symbol): symbol for symbol in not_fetched_list}
-                    for future in as_completed(futures):
-                        result = future.result()
-                        if result:
-                            all_stock_data.append(result)
-                                
+
         return jsonify({
             "timestamp": datetime.now(pytz.timezone('Asia/Kolkata')).strftime("%d-%m-%Y %H:%M"),
             "stocks": all_stock_data,
-            "fetched_lst":fetched_lst,
-            "not_fetched_lst":not_fetched_list,
-            "repeating_code_count":repeating_code
+            "fetched_count": fetched_count
         })
 
     except Exception as e:
