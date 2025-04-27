@@ -177,12 +177,13 @@ def get_stocks_data():
                     result = future.result()
                     if result:
                         all_stock_data.append(result)
+        temp_fetched_lst = set( fetched_lst)
         return jsonify({
             "timestamp": datetime.now(pytz.timezone('Asia/Kolkata')).strftime("%d-%m-%Y %H:%M"),
             "stocks": all_stock_data,
             "selected_stock":selected_symbols,
             "not_fetched_lst":not_fetched_lst,
-            "fetched_stock":set(fetched_lst),
+            "fetched_stock":temp_fetched_lst,
             "fetching_count":fetching_count
         })
 
