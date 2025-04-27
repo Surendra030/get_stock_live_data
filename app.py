@@ -121,7 +121,7 @@ def get_all_stock_codes():
 @app.route("/get_stocks_data", methods=["GET"])
 def get_stocks_data():
     global fetched_lst
-    fetched_lst = []
+    fetched_lst = set()
     fetching_count = 0
 
     try:
