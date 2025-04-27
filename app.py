@@ -15,7 +15,7 @@ BATCH_COUNT_NUM = 100
 CAPITAL = 100000  # For calculation
 
 not_fetched_lst = []
-fetched_lst = []
+fetched_lst = set()
 
 nse = Nse()
 stock_codes = nse.get_stock_codes()
@@ -93,7 +93,7 @@ def fetch_stock_data(symbol):
                 'STOCK_DATA':quote
             }
             
-            fetched_lst.append(symbol)
+            fetched_lst.add(symbol)
             
             return obj
 
@@ -160,7 +160,7 @@ def get_stocks_data():
                 result = future.result()
                 if result:
                     all_stock_data.append(result)
-                    fetched_lst.append(futures[future])  # Track successfully fetched symbols
+                    fetched_lst.add(futures[future])  # Track successfully fetched symbols
 
         # Check if some stocks were not fetched
         not_fetched_lst = []
