@@ -182,7 +182,7 @@ def get_stocks_data():
             "stocks": all_stock_data,
             "selected_stock":selected_symbols,
             "not_fetched_lst":not_fetched_lst,
-            "fetched_stock":fetched_lst,
+            "fetched_stock":set(fetched_lst),
             "fetching_count":fetching_count
         })
 
