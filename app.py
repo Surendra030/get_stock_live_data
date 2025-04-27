@@ -138,7 +138,7 @@ def get_all_stock_codes():
 @app.route("/get_stocks_data", methods=["GET"])
 def get_stocks_data():
     try:
-        
+        global fetched_lst
         fetching_count =0
         
         batch_param = request.args.get("batch_num", default=None, type=int)
@@ -170,20 +170,19 @@ def get_stocks_data():
         # If there are stocks that failed, retry fetching
         if not_fetched_lst and fetching_count==0:
             fetching_count +=1
-            
+            fetched_lst = []
             with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
                 futures = {executor.submit(fetch_stock_data, symbol): symbol for symbol in not_fetched_lst}
                 for future in as_completed(futures):
                     result = future.result()
                     if result:
                         all_stock_data.append(result)
-        temp_fetched_lst = set( fetched_lst)
         return jsonify({
             "timestamp": datetime.now(pytz.timezone('Asia/Kolkata')).strftime("%d-%m-%Y %H:%M"),
             "stocks": all_stock_data,
             "selected_stock":selected_symbols,
             "not_fetched_lst":not_fetched_lst,
-            "fetched_stock":temp_fetched_lst,
+            "fetched_stock":fetched_lst,
             "fetching_count":fetching_count
         })
 
