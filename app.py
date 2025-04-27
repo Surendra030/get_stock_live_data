@@ -156,7 +156,7 @@ def get_stocks_data():
         
         if all_stock_data:
             if len(fetched_lst)>0 and len(stock_symbols)>0:
-                not_fetched_lst = difference_preserve_order(stock_symbols,fetched_lst)
+                not_fetched_lst = difference_preserve_order(selected_symbols,fetched_lst)
         
         return jsonify({
             "timestamp": datetime.now(pytz.timezone('Asia/Kolkata')).strftime("%d-%m-%Y %H:%M"),
