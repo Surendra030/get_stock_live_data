@@ -138,6 +138,9 @@ def get_all_stock_codes():
 @app.route("/get_stocks_data", methods=["GET"])
 def get_stocks_data():
     try:
+        
+        fetching_count =0
+        
         batch_param = request.args.get("batch_num", default=None, type=int)
         if batch_param is None:
             return jsonify({"error": "Please provide a valid 'batch_num' in query params"}), 400
@@ -147,19 +150,33 @@ def get_stocks_data():
             return jsonify({"error": f"'batch_num' must be between 1 and {len(main_lst)}"}), 400
 
         selected_symbols = main_lst[batch_param - 1]
-
+        
         all_stock_data = []
+
+        
         with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
             futures = {executor.submit(fetch_stock_data, symbol): symbol for symbol in selected_symbols}
             for future in as_completed(futures):
                 result = future.result()
                 if result:
                     all_stock_data.append(result)
-        
-        if all_stock_data:
-            if len(fetched_lst)>0 and len(stock_symbols)>0:
-                not_fetched_lst = difference_preserve_order(selected_symbols,fetched_lst)
-        
+                    fetched_lst.append(futures[future])  # Track successfully fetched symbols
+
+        # Check if some stocks were not fetched
+        not_fetched_lst = []
+        if len(fetched_lst) > 0 and len(selected_symbols) > 0:
+            not_fetched_lst = list(difference_preserve_order(selected_symbols, fetched_lst))
+
+        # If there are stocks that failed, retry fetching
+        if not_fetched_lst and fetching_count==0:
+            fetching_count +=1
+            
+            with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+                futures = {executor.submit(fetch_stock_data, symbol): symbol for symbol in not_fetched_lst}
+                for future in as_completed(futures):
+                    result = future.result()
+                    if result:
+                        all_stock_data.append(result)
         return jsonify({
             "timestamp": datetime.now(pytz.timezone('Asia/Kolkata')).strftime("%d-%m-%Y %H:%M"),
             "stocks": all_stock_data,
