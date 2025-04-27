@@ -163,7 +163,11 @@ def get_stocks_data():
                         temp_fetched_lst.add(futures[future])
 
         fetched_lst.update(temp_fetched_lst)
-        selected_symbols = None if len(selected_symbols) == len(fetched_lst) else selected_symbols
+        
+        # Check if everything already fetched
+        if set(selected_symbols).issubset(fetched_lst):
+            selected_symbols = None
+        
         return jsonify({
             "timestamp": datetime.now(pytz.timezone('Asia/Kolkata')).strftime("%d-%m-%Y %H:%M"),
             "stocks": all_stock_data,
