@@ -187,7 +187,7 @@ def get_stocks_data():
         return jsonify({
             "timestamp": datetime.now(pytz.timezone('Asia/Kolkata')).strftime("%d-%m-%Y %H:%M"),
             "stocks": all_stock_data,
-            "fetched_count",fetched_count
+            "fetched_count": fetched_count
         })
 
     except Exception as e:
