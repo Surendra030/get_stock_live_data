@@ -14,6 +14,8 @@ MAX_WORKERS = 15
 BATCH_COUNT_NUM = 100
 CAPITAL = 100000  # For calculation
 
+not_fetched_lst = []
+fetched_lst = []
 
 nse = Nse()
 stock_codes = nse.get_stock_codes()
@@ -70,6 +72,10 @@ def get_stock_symbols():
     main_lst = [stock_symbols[i:i + batch_size] for i in range(0, len(stock_symbols), batch_size)]
     return main_lst
 
+def difference_preserve_order(lst1, lst2):
+    set2 = set(lst2)
+    return list(item for item in lst1 if item not in set2)
+
 
 # Fetch NSE data for a symbol
 def fetch_stock_data(symbol):
@@ -79,47 +85,15 @@ def fetch_stock_data(symbol):
             quote = nse.get_quote(symbol)
             if not quote:
                 raise ValueError("Empty quote")
+            
             obj = {
                 'STOCK_SYMBOL':symbol,
                 'STOCK_DATA':quote
             }
+            
+            fetched_lst.append(symbol)
+            
             return obj
-        
-        
-            current_price = quote.get("lastPrice", 0.0)
-            price_change = quote.get("change", 0.0)
-            percentage_change = quote.get("pChange", 0.0)
-            previous_close_price = quote.get("previousClose", 0.0)
-            opening_price = quote.get("open", 0.0)
-            closing_price = quote.get("close", 0.0)
-            vwap = quote.get("vwap", 0.0)
-            daily_low = quote.get("dayLow", 0.0)
-            daily_high = quote.get("dayHigh", 0.0)
-            intraDay = quote.get("intraDayHighLow", {})
-
-            today_low = intraDay.get("min", 0.0)
-            today_high = intraDay.get("max", 0.0)
-            today_value = intraDay.get("value", 0.0)
-
-            data = {
-                "symbol": symbol,
-                "data": {
-                    "currentPrice": current_price,
-                    "priceChange": price_change,
-                    "percentageChange": percentage_change,
-                    "previousClosePrice": previous_close_price,
-                    "openingPrice": opening_price,
-                    "closingPrice": closing_price,
-                    "vwap": vwap,
-                    "dailyLow": daily_low,
-                    "dailyHigh": daily_high,
-                    "todayHigh": today_high,
-                    "todayLow": today_low,
-                    "todayEndingValue": today_value,
-                },
-                "calculated_data": calculate_and_save(today_value, today_high, today_low)
-            }
-            return data
 
         except Exception as e:
             print(f"Error fetching {symbol} (Attempt {attempt}): {e}")
@@ -179,10 +153,15 @@ def get_stocks_data():
                 result = future.result()
                 if result:
                     all_stock_data.append(result)
-
+        
+        if all_stock_data:
+            if len(fetched_lst)>0 and len(stock_symbols)>0:
+                not_fetched_lst = difference_preserve_order(stock_symbols,fetched_lst)
+        
         return jsonify({
             "timestamp": datetime.now(pytz.timezone('Asia/Kolkata')).strftime("%d-%m-%Y %H:%M"),
-            "stocks": all_stock_data
+            "stocks": all_stock_data,
+            "not_fetched_lst":not_fetched_lst
         })
 
     except Exception as e:
