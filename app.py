@@ -170,7 +170,6 @@ def get_stocks_data():
         # If there are stocks that failed, retry fetching
         if not_fetched_lst and fetching_count==0:
             fetching_count +=1
-            fetched_lst = []
             with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
                 futures = {executor.submit(fetch_stock_data, symbol): symbol for symbol in not_fetched_lst}
                 for future in as_completed(futures):
