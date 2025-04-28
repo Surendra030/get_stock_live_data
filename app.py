@@ -10,11 +10,9 @@ app = Flask(__name__)
 # Constants
 MAX_RETRIES = 3
 RETRY_DELAY = 5
-MAX_WORKERS = 15
+MAX_WORKERS = 30
 BATCH_COUNT_NUM = 100
 CAPITAL = 100000  # For calculation
-
-fetched_count = []
 
 
 nse = Nse()
@@ -77,7 +75,6 @@ def get_stock_symbols():
 def fetch_stock_data(symbol):
     
     for attempt in range(1, MAX_RETRIES + 1):
-        global fetched_count
         try:
             quote = nse.get_quote(symbol)
             if not quote:
@@ -86,7 +83,6 @@ def fetch_stock_data(symbol):
                 'STOCK_SYMBOL':symbol,
                 'STOCK_DATA':quote
             }
-            fetched_count.append(symbol_index)
             return obj
         
         
@@ -178,7 +174,7 @@ def get_stocks_data():
 
         all_stock_data = []
         with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-            futures = {executor.submit(fetch_stock_data, symbol,index): symbol for index,symbol in enumerate(selected_symbols)}
+            futures = {executor.submit(fetch_stock_data, symbol): symbol for symbol in selected_symbols}
             for future in as_completed(futures):
                 result = future.result()
                 if result:
@@ -186,8 +182,7 @@ def get_stocks_data():
 
         return jsonify({
             "timestamp": datetime.now(pytz.timezone('Asia/Kolkata')).strftime("%d-%m-%Y %H:%M"),
-            "stocks": all_stock_data,
-            "fetched_count": fetched_count
+            "stocks": all_stock_data
         })
 
     except Exception as e:
