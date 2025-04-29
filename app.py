@@ -156,36 +156,8 @@ def get_all_stock_codes():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-# Route to get batch stock data (sequential version)
-@app.route("/get_stocks_data", methods=["GET"])
-def get_stocks_data():
-    try:
-        batch_param = request.args.get("batch_num", default=None, type=int)
-        if batch_param is None:
-            return jsonify({"error": "Please provide a valid 'batch_num' in query params"}), 400
-
-        main_lst = get_stock_symbols()
-        if batch_param < 1 or batch_param > len(main_lst):
-            return jsonify({"error": f"'batch_num' must be between 1 and {len(main_lst)}"}), 400
-
-        selected_symbols = main_lst[batch_param - 1]
-
-        all_stock_data = []
-        for symbol in selected_symbols:
-            result = fetch_stock_data(symbol)
-            if result:
-                all_stock_data.append(result)
-
-        return jsonify({
-            "timestamp": datetime.now(pytz.timezone('Asia/Kolkata')).strftime("%d-%m-%Y %H:%M"),
-            "stocks": all_stock_data
-        })
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
-# # Route to get batch stock data
+        
+## Route to get batch stock data (sequential version)
 # @app.route("/get_stocks_data", methods=["GET"])
 # def get_stocks_data():
 #     try:
@@ -200,12 +172,10 @@ def get_stocks_data():
 #         selected_symbols = main_lst[batch_param - 1]
 
 #         all_stock_data = []
-#         with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-#             futures = {executor.submit(fetch_stock_data, symbol): symbol for symbol in selected_symbols}
-#             for future in as_completed(futures):
-#                 result = future.result()
-#                 if result:
-#                     all_stock_data.append(result)
+#         for symbol in selected_symbols:
+#             result = fetch_stock_data(symbol)
+#             if result:
+#                 all_stock_data.append(result)
 
 #         return jsonify({
 #             "timestamp": datetime.now(pytz.timezone('Asia/Kolkata')).strftime("%d-%m-%Y %H:%M"),
@@ -214,6 +184,37 @@ def get_stocks_data():
 
 #     except Exception as e:
 #         return jsonify({"error": str(e)}), 500
+
+
+# Route to get batch stock data
+@app.route("/get_stocks_data", methods=["GET"])
+def get_stocks_data():
+    try:
+        batch_param = request.args.get("batch_num", default=None, type=int)
+        if batch_param is None:
+            return jsonify({"error": "Please provide a valid 'batch_num' in query params"}), 400
+
+        main_lst = get_stock_symbols()
+        if batch_param < 1 or batch_param > len(main_lst):
+            return jsonify({"error": f"'batch_num' must be between 1 and {len(main_lst)}"}), 400
+
+        selected_symbols = main_lst[batch_param - 1]
+
+        all_stock_data = []
+        with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+            futures = {executor.submit(fetch_stock_data, symbol): symbol for symbol in selected_symbols}
+            for future in as_completed(futures):
+                result = future.result()
+                if result:
+                    all_stock_data.append(result)
+
+        return jsonify({
+            "timestamp": datetime.now(pytz.timezone('Asia/Kolkata')).strftime("%d-%m-%Y %H:%M"),
+            "stocks": all_stock_data
+        })
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 # Run the app
